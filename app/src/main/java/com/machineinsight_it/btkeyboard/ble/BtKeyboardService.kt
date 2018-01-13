@@ -9,6 +9,9 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import com.machineinsight_it.btkeyboard.R
+import com.machineinsight_it.btkeyboard.ble.event.ConnectedEvent
+import com.machineinsight_it.btkeyboard.ble.event.ConnectionErrorEvent
+import com.machineinsight_it.btkeyboard.ble.event.base.BleEvent
 import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.main.MainActivity
 import com.polidea.rxandroidble.RxBleClient
@@ -20,19 +23,11 @@ const val BROADCAST_EVENT_NAME = "btkeyboard_event_broadcast"
 
 private const val EXTRA_STOP_SERVICE = "stopService"
 private const val EXTRA_MAC = "deviceMac"
-private const val EXTRA_CONNECTION_STATE = "connectionState"
+private const val EXTRA_CONNECTION_EVENT = "connectionEvent"
 private const val NOTIFICATION_ID = 1234
 private const val NOTIFICATION_CHANNEL_ID = "1"
 
 class BtKeyboardService : Service(), AnkoLogger {
-    enum class ConnectionState {
-        CONNECTING,
-        CONNECTED,
-        CONNECTION_ERROR,
-        DISCONNECTED,
-        UNKNOWN
-    }
-
     companion object {
         var isRunning = false
             private set
@@ -45,16 +40,16 @@ class BtKeyboardService : Service(), AnkoLogger {
                     putExtra(EXTRA_MAC, deviceMac)
                 }
 
-        fun extractConnectionState(intent: Intent): ConnectionState {
-            if (!intent.hasExtra(EXTRA_CONNECTION_STATE)) {
-                return ConnectionState.UNKNOWN
+        fun extractConnectionEvent(intent: Intent): BleEvent {
+            if (!intent.hasExtra(EXTRA_CONNECTION_EVENT)) {
+                return ConnectionErrorEvent()
             }
 
-            if (intent.getSerializableExtra(EXTRA_CONNECTION_STATE) !is ConnectionState) {
-                return ConnectionState.UNKNOWN
+            if (intent.getParcelableExtra<BleEvent>(EXTRA_CONNECTION_EVENT) == null) {
+                return ConnectionErrorEvent()
             }
 
-            return intent.getSerializableExtra(EXTRA_CONNECTION_STATE) as ConnectionState
+            return intent.getParcelableExtra(EXTRA_CONNECTION_EVENT) as BleEvent
         }
     }
 
@@ -65,13 +60,13 @@ class BtKeyboardService : Service(), AnkoLogger {
 
     private lateinit var broadcastManager: LocalBroadcastManager
 
-    private fun createConnectionStateIntent(state: ConnectionState) =
+    private fun createConnectionEventIntent(event: BleEvent) =
             Intent(BROADCAST_EVENT_NAME).apply {
-                putExtra(EXTRA_CONNECTION_STATE, state)
+                putExtra(EXTRA_CONNECTION_EVENT, event)
             }
 
-    private fun broadcastConnectionState(state: ConnectionState) =
-            broadcastManager.sendBroadcast(createConnectionStateIntent(state))
+    private fun broadcastConnectionEvent(event: BleEvent) =
+            broadcastManager.sendBroadcast(createConnectionEventIntent(event))
 
     private fun createNotification(): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
@@ -117,7 +112,7 @@ class BtKeyboardService : Service(), AnkoLogger {
 //                        }
 //                )
 
-        broadcastConnectionState(ConnectionState.CONNECTED)
+        broadcastConnectionEvent(ConnectedEvent(Device(bleDevice.macAddress, bleDevice.name ?: "")))
     }
 
     override fun onBind(intent: Intent?): IBinder? {

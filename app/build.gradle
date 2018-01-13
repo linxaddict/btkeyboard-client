@@ -8,6 +8,10 @@ android {
         enabled true
     }
 
+    androidExtensions {
+        experimental true
+    }
+
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.machineinsight_it.btkeyboard"

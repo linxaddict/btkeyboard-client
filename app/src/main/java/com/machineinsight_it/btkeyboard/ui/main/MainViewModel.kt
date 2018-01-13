@@ -2,6 +2,7 @@ package com.machineinsight_it.btkeyboard.ui.main
 
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
+import com.machineinsight_it.btkeyboard.R
 import com.machineinsight_it.btkeyboard.ble.BtKeyboardService
 import com.machineinsight_it.btkeyboard.ble.event.ConnectedEvent
 import com.machineinsight_it.btkeyboard.ble.event.ConnectingEvent
@@ -30,19 +31,22 @@ class MainViewModel @Inject constructor() : BaseViewModel() {
 
     private val eventHandler = object : BleEventHandler {
         override fun handleConnecting(event: ConnectingEvent) {
-            System.out.println("handle connecting event")
+            viewAccess.showConnectingDialog()
         }
 
         override fun handleConnected(event: ConnectedEvent) {
-            System.out.println("handle connected event")
+            viewAccess.hideConnectingDialog()
+            viewAccess.showConnectionDetails()
         }
 
         override fun handleConnectionError(event: ConnectionErrorEvent) {
-            System.out.println("handle connection error event")
+            viewAccess.hideConnectingDialog()
+            viewAccess.showMessage(R.string.connectionError)
         }
 
         override fun handleDisconnected(event: DisconnectedEvent) {
-            System.out.println("handle disconnected event")
+            viewAccess.hideConnectingDialog()
+            viewAccess.showMessage(R.string.disconnect)
         }
 
         override fun handle(event: BleEvent) {

@@ -18,9 +18,7 @@ import android.support.v7.widget.LinearLayoutManager
 import com.machineinsight_it.btkeyboard.R
 import com.machineinsight_it.btkeyboard.ble.BROADCAST_EVENT_NAME
 import com.machineinsight_it.btkeyboard.ble.BtKeyboardService
-import com.machineinsight_it.btkeyboard.ble.event.ConnectedEvent
 import com.machineinsight_it.btkeyboard.databinding.ActivityMainBinding
-import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.base.adapter.MultiViewAdapter
 import com.machineinsight_it.btkeyboard.ui.connection.ConnectionFragment
 import com.machineinsight_it.btkeyboard.ui.device.DeviceViewModel
@@ -29,7 +27,6 @@ import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.indeterminateProgressDialog
 import javax.inject.Inject
-
 
 private const val PERMISSION_REQUEST_CODE = 100
 
@@ -44,10 +41,8 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     private val connectionFragment = ConnectionFragment()
 
     private fun showConnection() {
-        val event = ConnectedEvent(Device("mac", "name"))
-        viewModel.handleBleEvent(event)
-
         val transaction = supportFragmentManager.beginTransaction()
+
         transaction.setCustomAnimations(R.animator.fade_in, android.R.animator.fade_out)
         transaction.add(R.id.fragment_container, connectionFragment)
         transaction.addToBackStack(null)
@@ -57,20 +52,7 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     private val eventReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.let {
-                when (BtKeyboardService.extractConnectionState(intent)) {
-                    BtKeyboardService.ConnectionState.CONNECTING -> {
-                        connectingDialog = indeterminateProgressDialog(R.string.connecting)
-                        connectingDialog?.setCancelable(false)
-                    }
-                    BtKeyboardService.ConnectionState.CONNECTED -> showConnection()
-                    BtKeyboardService.ConnectionState.CONNECTION_ERROR -> snackbar(binding.root,
-                            R.string.connectionError)
-                    BtKeyboardService.ConnectionState.UNKNOWN -> snackbar(binding.root,
-                            R.string.connectionError)
-                    else -> {
-                        connectingDialog?.hide()
-                    }
-                }
+                viewModel.handleBleEvent(BtKeyboardService.extractConnectionEvent(intent))
             }
         }
     }
@@ -170,5 +152,26 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
 
     override fun notifyDevicesRemoved(count: Int) {
         devicesAdapter.notifyItemRangeRemoved(0, count)
+    }
+
+    override fun showMessage(message: String) {
+        snackbar(binding.root, message)
+    }
+
+    override fun showMessage(message: Int) {
+        snackbar(binding.root, message)
+    }
+
+    override fun showConnectingDialog() {
+        connectingDialog = indeterminateProgressDialog(R.string.connecting)
+        connectingDialog?.setCancelable(false)
+    }
+
+    override fun hideConnectingDialog() {
+        connectingDialog?.hide()
+    }
+
+    override fun showConnectionDetails() {
+        showConnection()
     }
 }

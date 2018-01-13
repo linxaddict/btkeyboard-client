@@ -1,9 +1,7 @@
 package com.machineinsight_it.btkeyboard.ble.event.base
 
-import com.machineinsight_it.btkeyboard.domain.Device
+import android.os.Parcelable
 
-interface BleEvent {
-    val device: Device
-
+interface BleEvent : Parcelable {
     fun handleBy(handler: BleEventHandler)
 }
