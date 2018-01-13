@@ -1,18 +1,17 @@
-package com.machineinsight_it.btkeyboard.bt.di
+package com.machineinsight_it.btkeyboard.bt
 
-import com.machineinsight_it.btkeyboard.bt.BtKeyboardService
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ServiceModule::class, BluetoothModule::class])
-interface ServiceComponent {
+@Component(modules = [BtKeyboardServiceModule::class, BluetoothModule::class])
+interface BtKeyboardServiceComponent {
     @Component.Builder
     interface Builder {
         @BindsInstance
         fun service(service: BtKeyboardService): Builder
-        fun build(): ServiceComponent
+        fun build(): BtKeyboardServiceComponent
     }
 
     fun inject(service: BtKeyboardService)

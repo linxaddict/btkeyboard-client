@@ -9,7 +9,7 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import com.machineinsight_it.btkeyboard.R
-import com.machineinsight_it.btkeyboard.bt.di.DaggerServiceComponent
+import com.machineinsight_it.btkeyboard.bt.DaggerBtKeyboardServiceComponent
 import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.main.MainActivity
 import com.polidea.rxandroidble.RxBleClient
@@ -142,7 +142,7 @@ class BtKeyboardService : Service(), AnkoLogger {
     }
 
     override fun onCreate() {
-        DaggerServiceComponent
+        DaggerBtKeyboardServiceComponent
                 .builder()
                 .service(this)
                 .build()

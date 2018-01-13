@@ -2,7 +2,7 @@ package com.machineinsight_it.btkeyboard.di
 
 import android.app.Application
 import com.machineinsight_it.btkeyboard.BtKeyboardApplication
-import com.machineinsight_it.btkeyboard.bt.di.BluetoothModule
+import com.machineinsight_it.btkeyboard.bt.BluetoothModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule

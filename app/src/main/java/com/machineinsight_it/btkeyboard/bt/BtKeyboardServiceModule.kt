@@ -1,4 +1,4 @@
-package com.machineinsight_it.btkeyboard.bt.di
+package com.machineinsight_it.btkeyboard.bt
 
 import android.content.Context
 import com.machineinsight_it.btkeyboard.bt.BtKeyboardService
@@ -7,7 +7,7 @@ import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-class ServiceModule {
+class BtKeyboardServiceModule {
     @Provides
     @Singleton
     fun provideContext(service: BtKeyboardService): Context {
