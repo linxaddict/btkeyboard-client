@@ -20,6 +20,7 @@ import com.machineinsight_it.btkeyboard.bt.BROADCAST_EVENT_NAME
 import com.machineinsight_it.btkeyboard.bt.BtKeyboardService
 import com.machineinsight_it.btkeyboard.databinding.ActivityMainBinding
 import com.machineinsight_it.btkeyboard.ui.base.adapter.MultiViewAdapter
+import com.machineinsight_it.btkeyboard.ui.connection.ConnectionFragment
 import com.machineinsight_it.btkeyboard.ui.device.DeviceViewModel
 import dagger.android.AndroidInjection
 import org.jetbrains.anko.design.longSnackbar
@@ -38,6 +39,15 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     private lateinit var binding: ActivityMainBinding
 
     private var connectingDialog: Dialog? = null
+    private val connectionFragment = ConnectionFragment()
+
+    private fun showConnection() {
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.setCustomAnimations(R.animator.fade_in, android.R.animator.fade_out)
+        transaction.add(R.id.fragment_container, connectionFragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
+    }
 
     private val eventReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -47,7 +57,7 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
                         connectingDialog = indeterminateProgressDialog(R.string.connecting)
                         connectingDialog?.setCancelable(false)
                     }
-                    BtKeyboardService.ConnectionState.CONNECTED -> snackbar(binding.root, "Connected")
+                    BtKeyboardService.ConnectionState.CONNECTED -> showConnection()
                     BtKeyboardService.ConnectionState.CONNECTION_ERROR -> snackbar(binding.root,
                             R.string.connectionError)
                     BtKeyboardService.ConnectionState.UNKNOWN -> snackbar(binding.root,

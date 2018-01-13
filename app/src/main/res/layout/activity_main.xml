@@ -17,60 +17,6 @@
         android:background="@color/lightBackground"
         tools:context="com.machineinsight_it.btkeyboard.ui.main.MainActivity">
 
-        <Button
-            android:id="@+id/btnDisconnect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/disconnect"
-            android:textColor="@color/white"
-            app:backgroundTint="@color/primaryRed"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:visibleIf="@{model.connectedToDevice}"/>
-
-        <TextView
-            android:id="@+id/txtvDeviceMac"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"
-            android:text="@{model.connectedDevice.mac}"
-            android:textColor="@color/secondaryText"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toTopOf="@id/btnDisconnect"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:visibleIf="@{model.connectedToDevice}"
-            tools:text="69:FB:13:D0:2E:1C"/>
-
-        <TextView
-            android:id="@+id/txtvDeviceName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{model.connectedDevice.name}"
-            android:textSize="16sp"
-            android:textColor="@color/primaryText"
-            android:layout_marginBottom="4dp"
-            app:layout_constraintBottom_toTopOf="@id/txtvDeviceMac"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:visibleIf="@{model.connectedToDevice}"
-            tools:text="RPI3"/>
-
-        <ImageView
-            android:id="@+id/imgvBluetooth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_bluetooth"
-            android:contentDescription="@string/imageBluetooth"
-            app:layout_constraintBottom_toTopOf="@id/txtvDeviceName"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:visibleIf="@{model.connectedToDevice}"/>
-
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
@@ -96,6 +42,11 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:visibleIf="@{model.noDevicesFoundVisible}"
             tools:visibility="gone"/>
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     </android.support.constraint.ConstraintLayout>
 

@@ -2,14 +2,20 @@ package com.machineinsight_it.btkeyboard
 
 import android.app.Activity
 import android.app.Application
+import android.support.v4.app.Fragment
 import com.machineinsight_it.btkeyboard.di.DaggerAppComponent
+import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
+import dagger.android.support.HasSupportFragmentInjector
 import javax.inject.Inject
 
-class BtKeyboardApplication : Application(), HasActivityInjector {
+class BtKeyboardApplication : Application(), HasActivityInjector, HasSupportFragmentInjector {
     @Inject
     lateinit var activityDispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
+
+    @Inject
+    lateinit var fragmentDispatchingAndroidInjector: DispatchingAndroidInjector<Fragment>
 
     override fun onCreate() {
         super.onCreate()
@@ -23,5 +29,9 @@ class BtKeyboardApplication : Application(), HasActivityInjector {
 
     override fun activityInjector(): DispatchingAndroidInjector<Activity> {
         return activityDispatchingAndroidInjector
+    }
+
+    override fun supportFragmentInjector(): AndroidInjector<Fragment> {
+        return fragmentDispatchingAndroidInjector
     }
 }
