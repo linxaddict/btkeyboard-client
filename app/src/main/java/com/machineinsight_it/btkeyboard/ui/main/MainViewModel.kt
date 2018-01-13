@@ -2,7 +2,13 @@ package com.machineinsight_it.btkeyboard.ui.main
 
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
-import com.machineinsight_it.btkeyboard.bt.BtKeyboardService
+import com.machineinsight_it.btkeyboard.ble.BtKeyboardService
+import com.machineinsight_it.btkeyboard.ble.event.ConnectedEvent
+import com.machineinsight_it.btkeyboard.ble.event.ConnectingEvent
+import com.machineinsight_it.btkeyboard.ble.event.ConnectionErrorEvent
+import com.machineinsight_it.btkeyboard.ble.event.DisconnectedEvent
+import com.machineinsight_it.btkeyboard.ble.event.base.BleEvent
+import com.machineinsight_it.btkeyboard.ble.event.base.BleEventHandler
 import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.base.model.BaseViewModel
 import com.machineinsight_it.btkeyboard.ui.device.DeviceViewModel
@@ -21,6 +27,28 @@ class MainViewModel @Inject constructor() : BaseViewModel() {
     val devicesModels = mutableListOf<DeviceViewModel>()
     val scanInProgress = ObservableBoolean(false)
     val noDevicesFoundVisible = ObservableBoolean(false)
+
+    private val eventHandler = object : BleEventHandler {
+        override fun handleConnecting(event: ConnectingEvent) {
+            System.out.println("handle connecting event")
+        }
+
+        override fun handleConnected(event: ConnectedEvent) {
+            System.out.println("handle connected event")
+        }
+
+        override fun handleConnectionError(event: ConnectionErrorEvent) {
+            System.out.println("handle connection error event")
+        }
+
+        override fun handleDisconnected(event: DisconnectedEvent) {
+            System.out.println("handle disconnected event")
+        }
+
+        override fun handle(event: BleEvent) {
+            event.handleBy(this)
+        }
+    }
 
     @Inject
     lateinit var viewAccess: MainViewAccess
@@ -80,4 +108,6 @@ class MainViewModel @Inject constructor() : BaseViewModel() {
         connectedDevice.set(BtKeyboardService.connectedDevice)
         connectedToDevice.set(connectedDevice.get() != null)
     }
+
+    fun handleBleEvent(event: BleEvent) = event.handleBy(eventHandler)
 }

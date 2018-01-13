@@ -16,9 +16,11 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import com.machineinsight_it.btkeyboard.R
-import com.machineinsight_it.btkeyboard.bt.BROADCAST_EVENT_NAME
-import com.machineinsight_it.btkeyboard.bt.BtKeyboardService
+import com.machineinsight_it.btkeyboard.ble.BROADCAST_EVENT_NAME
+import com.machineinsight_it.btkeyboard.ble.BtKeyboardService
+import com.machineinsight_it.btkeyboard.ble.event.ConnectedEvent
 import com.machineinsight_it.btkeyboard.databinding.ActivityMainBinding
+import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.base.adapter.MultiViewAdapter
 import com.machineinsight_it.btkeyboard.ui.connection.ConnectionFragment
 import com.machineinsight_it.btkeyboard.ui.device.DeviceViewModel
@@ -42,6 +44,9 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     private val connectionFragment = ConnectionFragment()
 
     private fun showConnection() {
+        val event = ConnectedEvent(Device("mac", "name"))
+        viewModel.handleBleEvent(event)
+
         val transaction = supportFragmentManager.beginTransaction()
         transaction.setCustomAnimations(R.animator.fade_in, android.R.animator.fade_out)
         transaction.add(R.id.fragment_container, connectionFragment)

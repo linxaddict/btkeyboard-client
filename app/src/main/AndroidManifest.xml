@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".bt.BtKeyboardService" />
+        <service android:name=".ble.BtKeyboardService" />
     </application>
 
 </manifest>

@@ -1,7 +1,6 @@
-package com.machineinsight_it.btkeyboard.bt
+package com.machineinsight_it.btkeyboard.ble
 
 import android.content.Context
-import com.machineinsight_it.btkeyboard.bt.BtKeyboardService
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

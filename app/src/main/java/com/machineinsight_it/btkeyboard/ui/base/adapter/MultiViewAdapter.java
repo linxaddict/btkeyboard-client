@@ -20,7 +20,7 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * @author Marcin PrzepiĂłrkowski
+ * @author Marcin Przepiórkowski
  * @since 18.03.2017
  * @version 1.1
  *

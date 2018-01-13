@@ -1,4 +1,4 @@
-package com.machineinsight_it.btkeyboard.bt
+package com.machineinsight_it.btkeyboard.ble
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -9,13 +9,10 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import com.machineinsight_it.btkeyboard.R
-import com.machineinsight_it.btkeyboard.bt.DaggerBtKeyboardServiceComponent
 import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.main.MainActivity
 import com.polidea.rxandroidble.RxBleClient
 import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.error
-import org.jetbrains.anko.info
 import rx.Subscription
 import javax.inject.Inject
 
