@@ -10,6 +10,14 @@ ext {
     rxAndroidBleVersion = "1.4.3"
     junitVersion = "4.12"
     kotlinVersion = "1.2.10"
+    archComponentsVersion = "1.0.0"
+
+    archComponents = [
+            viewModel: "android.arch.lifecycle:extensions:${archComponentsVersion}",
+            viewModelProcessor: "android.arch.lifecycle:compiler:${archComponentsVersion}",
+            room: "android.arch.persistence.room:runtime:${archComponentsVersion}",
+            roomProcessor: "android.arch.persistence.room:compiler:${archComponentsVersion}"
+    ]
 
     support = [
             appCompat: "com.android.support:appcompat-v7:${supportLibraryVersion}",

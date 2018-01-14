@@ -22,7 +22,10 @@ import javax.inject.Inject
 
 private const val SCAN_TIMEOUT: Long = 5 // seconds
 
-class MainViewModel @Inject constructor() : BaseViewModel() {
+class MainViewModel @Inject constructor(
+        val viewAccess: MainViewAccess,
+        val btClient: RxBleClient) : BaseViewModel() {
+
     val connectedDevice = ObservableField<Device>(null)
     val connectedToDevice = ObservableBoolean(false)
     val devicesModels = mutableListOf<DeviceViewModel>()
@@ -53,12 +56,6 @@ class MainViewModel @Inject constructor() : BaseViewModel() {
             event.handleBy(this)
         }
     }
-
-    @Inject
-    lateinit var viewAccess: MainViewAccess
-
-    @Inject
-    lateinit var btClient: RxBleClient
 
     private val addedDevices = mutableSetOf<String>()
 

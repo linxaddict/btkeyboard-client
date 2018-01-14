@@ -10,12 +10,15 @@ import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import com.machineinsight_it.btkeyboard.R
 import com.machineinsight_it.btkeyboard.ble.event.ConnectedEvent
+import com.machineinsight_it.btkeyboard.ble.event.ConnectingEvent
 import com.machineinsight_it.btkeyboard.ble.event.ConnectionErrorEvent
 import com.machineinsight_it.btkeyboard.ble.event.base.BleEvent
 import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.main.MainActivity
 import com.polidea.rxandroidble.RxBleClient
 import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.info
+import org.jetbrains.anko.error
 import rx.Subscription
 import javax.inject.Inject
 
@@ -42,11 +45,11 @@ class BtKeyboardService : Service(), AnkoLogger {
 
         fun extractConnectionEvent(intent: Intent): BleEvent {
             if (!intent.hasExtra(EXTRA_CONNECTION_EVENT)) {
-                return ConnectionErrorEvent()
+                return ConnectionErrorEvent(null)
             }
 
             if (intent.getParcelableExtra<BleEvent>(EXTRA_CONNECTION_EVENT) == null) {
-                return ConnectionErrorEvent()
+                return ConnectionErrorEvent(null)
             }
 
             return intent.getParcelableExtra(EXTRA_CONNECTION_EVENT) as BleEvent
@@ -91,28 +94,27 @@ class BtKeyboardService : Service(), AnkoLogger {
         connectionSubscription?.unsubscribe()
 
         val bleDevice = btClient.getBleDevice(mac)
-//        connectionSubscription = bleDevice
-//                .establishConnection(false)
-//                .doOnSubscribe { broadcastConnectionState(ConnectionState.CONNECTING) }
-//                .subscribe(
-//                        { connection ->
-//                            info("connection established")
-//                            // TODO: connection.discoverServices()
-//
-//                            connectedDevice = Device(mac, bleDevice.name ?: "")
-//
-//                            broadcastConnectionState(ConnectionState.CONNECTED)
-//                        },
-//                        { e ->
-//                            error("cannot establish connection: " + e)
-//                            connectedDevice = null
-//
-//                            broadcastConnectionState(ConnectionState.CONNECTION_ERROR)
-//                            broadcastConnectionState(ConnectionState.DISCONNECTED)
-//                        }
-//                )
+        val device = Device(bleDevice.macAddress, bleDevice.name ?: "")
 
-        broadcastConnectionEvent(ConnectedEvent(Device(bleDevice.macAddress, bleDevice.name ?: "")))
+        connectionSubscription = bleDevice
+                .establishConnection(false)
+                .doOnSubscribe { broadcastConnectionEvent(ConnectingEvent(device)) }
+                .subscribe(
+                        { connection ->
+                            // TODO: connection.discoverServices()
+
+                            connectedDevice = device
+                            broadcastConnectionEvent(ConnectedEvent(device))
+
+                            info("connection established")
+                        },
+                        { e ->
+                            connectedDevice = null
+                            broadcastConnectionEvent(ConnectionErrorEvent(device))
+
+                            error("cannot establish connection: " + e)
+                        }
+                )
     }
 
     override fun onBind(intent: Intent?): IBinder? {

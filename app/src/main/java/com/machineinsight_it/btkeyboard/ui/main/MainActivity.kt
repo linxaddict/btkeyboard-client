@@ -2,6 +2,8 @@ package com.machineinsight_it.btkeyboard.ui.main
 
 import android.Manifest
 import android.app.Dialog
+import android.arch.lifecycle.ViewModelProvider
+import android.arch.lifecycle.ViewModelProviders
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -32,7 +34,10 @@ private const val PERMISSION_REQUEST_CODE = 100
 
 class MainActivity : AppCompatActivity(), MainViewAccess {
     @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
     lateinit var viewModel: MainViewModel
+
 
     private lateinit var devicesAdapter: MultiViewAdapter
     private lateinit var binding: ActivityMainBinding
@@ -106,6 +111,8 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
         super.onCreate(savedInstanceState)
 
         AndroidInjection.inject(this)
+
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
 
         val receiver = LocalBroadcastManager.getInstance(this)
         receiver.registerReceiver(eventReceiver, IntentFilter(BROADCAST_EVENT_NAME))

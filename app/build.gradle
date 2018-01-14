@@ -53,11 +53,14 @@ dependencies {
     implementation rx.kotlin
     implementation ble.rxAndroidBle
 
+    implementation archComponents.viewModel
+
     compileOnly javax.jsr250
 
     kapt dataBinding.compiler
     kapt google.daggerCompiler
     kapt google.daggerProcessor
+    kapt archComponents.viewModelProcessor
 
     testImplementation test.junit
 }

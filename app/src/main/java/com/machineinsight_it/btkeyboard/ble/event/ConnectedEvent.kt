@@ -10,7 +10,7 @@ import kotlinx.android.parcel.RawValue
 
 @Parcelize
 @SuppressLint("ParcelCreator")
-class ConnectedEvent(val device: @RawValue Device) : BleEvent, Parcelable {
+class ConnectedEvent(override val device: @RawValue Device?) : BleEvent, Parcelable {
     override fun handleBy(handler: BleEventHandler) {
         handler.handleConnected(this)
     }
