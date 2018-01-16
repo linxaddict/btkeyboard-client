@@ -36,14 +36,48 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    lateinit var viewModel: MainViewModel
+    private val viewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
+    }
 
+    private val devicesAdapter by lazy {
+        MultiViewAdapter.Builder(viewModel.devicesModels)
+                .register(
+                        R.layout.list_item_device,
+                        DeviceViewModel::class.java,
+                        { model, binding ->
+                            binding.root.setOnClickListener {
+                                startBluetoothService(model)
+                            }
+                        }
+                )
+                .build()
+    }
 
-    private lateinit var devicesAdapter: MultiViewAdapter
-    private lateinit var binding: ActivityMainBinding
+    private val binding by lazy {
+        DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+    }
+
+    private val connectionFragment by lazy { ConnectionFragment() }
+
+    private val localBroadcastManager by lazy {
+        LocalBroadcastManager.getInstance(this)
+    }
 
     private var connectingDialog: Dialog? = null
-    private val connectionFragment = ConnectionFragment()
+
+    private val eventReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let {
+                viewModel.handleBleEvent(BtKeyboardService.extractConnectionEvent(intent))
+            }
+        }
+    }
+
+    private fun startBluetoothService(model: DeviceViewModel) =
+            BtKeyboardService.createDeviceIntent(MainActivity@ this, model.mac).let {
+                startService(it)
+            }
 
     private fun showConnection() {
         val transaction = supportFragmentManager.beginTransaction()
@@ -54,19 +88,8 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
         transaction.commit()
     }
 
-    private val eventReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            intent?.let {
-                viewModel.handleBleEvent(BtKeyboardService.extractConnectionEvent(intent))
-            }
-        }
-    }
-
-    private fun isLocationPermissionGranted(): Boolean {
-        val permissionStatus = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-        return permissionStatus == PackageManager.PERMISSION_GRANTED
-    }
+    private fun isLocationPermissionGranted() = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
     private fun acquireLocationPermissionIfNeeded() {
         if (!isLocationPermissionGranted()) {
@@ -83,62 +106,34 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
         }
     }
 
-    private fun startBluetoothScan() {
+    private fun startBluetoothScan() =
         if (isLocationPermissionGranted()) {
             viewModel.scan()
         } else {
             acquireLocationPermissionIfNeeded()
         }
-    }
-
-    private fun createDevicesAdapter() {
-        devicesAdapter = MultiViewAdapter.Builder(viewModel.devicesModels)
-                .register(
-                        R.layout.list_item_device,
-                        DeviceViewModel::class.java,
-                        { model, binding ->
-                            binding.root.setOnClickListener {
-                                val serviceIntent = BtKeyboardService.createDeviceIntent(
-                                        MainActivity@this, model.mac)
-                                startService(serviceIntent)
-                            }
-                        }
-                )
-                .build()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         AndroidInjection.inject(this)
 
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
-
-        val receiver = LocalBroadcastManager.getInstance(this)
-        receiver.registerReceiver(eventReceiver, IntentFilter(BROADCAST_EVENT_NAME))
-
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.model = viewModel
-        binding.recyclerDevices.layoutManager = LinearLayoutManager(this)
-
-        createDevicesAdapter()
-
         binding.recyclerDevices.adapter = devicesAdapter
         binding.recyclerDevices.addItemDecoration(DividerItemDecoration(this,
                 LinearLayoutManager.VERTICAL))
-
         binding.swipeRefresh.setOnRefreshListener { startBluetoothScan() }
 
         viewModel.checkConnectivity()
+
+        localBroadcastManager.registerReceiver(eventReceiver, IntentFilter(BROADCAST_EVENT_NAME))
 
         startBluetoothScan()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-
-        val receiver = LocalBroadcastManager.getInstance(this)
-        receiver.unregisterReceiver(eventReceiver)
+        localBroadcastManager.unregisterReceiver(eventReceiver)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
@@ -153,13 +148,9 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
         }
     }
 
-    override fun notifyDeviceAdded(position: Int) {
-        devicesAdapter.notifyItemInserted(position)
-    }
+    override fun notifyDeviceAdded(position: Int) = devicesAdapter.notifyItemInserted(position)
 
-    override fun notifyDevicesRemoved(count: Int) {
-        devicesAdapter.notifyItemRangeRemoved(0, count)
-    }
+    override fun notifyDevicesRemoved(count: Int) = devicesAdapter.notifyItemRangeRemoved(0, count)
 
     override fun showMessage(message: String) {
         snackbar(binding.root, message)
@@ -178,7 +169,5 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
         connectingDialog?.hide()
     }
 
-    override fun showConnectionDetails() {
-        showConnection()
-    }
+    override fun showConnectionDetails() = showConnection()
 }
