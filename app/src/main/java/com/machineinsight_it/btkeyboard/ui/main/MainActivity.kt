@@ -1,9 +1,11 @@
 package com.machineinsight_it.btkeyboard.ui.main
 
 import android.Manifest
+import android.app.Activity
 import android.app.Dialog
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
+import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -25,12 +27,15 @@ import com.machineinsight_it.btkeyboard.ui.base.adapter.MultiViewAdapter
 import com.machineinsight_it.btkeyboard.ui.connection.ConnectionFragment
 import com.machineinsight_it.btkeyboard.ui.device.DeviceViewModel
 import dagger.android.AndroidInjection
+import org.jetbrains.anko.alert
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.indeterminateProgressDialog
+import org.jetbrains.anko.okButton
 import javax.inject.Inject
 
 private const val PERMISSION_REQUEST_CODE = 100
+private const val FEATURE_BLUETOOTH_REQUEST_CODE = 101
 
 class MainActivity : AppCompatActivity(), MainViewAccess {
     @Inject
@@ -113,6 +118,35 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
             acquireLocationPermissionIfNeeded()
         }
 
+    private fun setupBluetooth() {
+        val btAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (btAdapter == null) {
+            handleBluetoothDisabled()
+        } else {
+            if (!btAdapter.isEnabled) {
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBtIntent, FEATURE_BLUETOOTH_REQUEST_CODE)
+            } else {
+                initializeBluetoothScanning()
+            }
+        }
+    }
+
+    private fun initializeBluetoothScanning() {
+        binding.swipeRefresh.setOnRefreshListener { startBluetoothScan() }
+        viewModel.checkConnectivity()
+        localBroadcastManager.registerReceiver(eventReceiver, IntentFilter(BROADCAST_EVENT_NAME))
+
+        startBluetoothScan()
+    }
+
+
+    private fun handleBluetoothDisabled() {
+        alert("Bluetooth disabled", "Bluetooth") {
+            okButton { finish() }
+        }.show()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -122,13 +156,8 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
         binding.recyclerDevices.adapter = devicesAdapter
         binding.recyclerDevices.addItemDecoration(DividerItemDecoration(this,
                 LinearLayoutManager.VERTICAL))
-        binding.swipeRefresh.setOnRefreshListener { startBluetoothScan() }
 
-        viewModel.checkConnectivity()
-
-        localBroadcastManager.registerReceiver(eventReceiver, IntentFilter(BROADCAST_EVENT_NAME))
-
-        startBluetoothScan()
+        setupBluetooth()
     }
 
     override fun onDestroy() {
@@ -144,6 +173,16 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
                 viewModel.scan()
             } else {
                 snackbar(binding.root, R.string.bluetoothDisabled)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == FEATURE_BLUETOOTH_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                initializeBluetoothScanning()
+            } else {
+                handleBluetoothDisabled()
             }
         }
     }
