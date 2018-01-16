@@ -14,23 +14,26 @@ import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.base.model.BaseViewModel
 import com.machineinsight_it.btkeyboard.ui.device.DeviceViewModel
 import com.polidea.rxandroidble.RxBleClient
-import com.polidea.rxandroidble.internal.RxBleLog
+import com.polidea.rxandroidble.scan.ScanResult
 import com.polidea.rxandroidble.scan.ScanSettings
 import io.reactivex.Observable
+import rx.Subscription
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val SCAN_TIMEOUT: Long = 5 // seconds
 
 class MainViewModel @Inject constructor(
-        val viewAccess: MainViewAccess,
-        val btClient: RxBleClient) : BaseViewModel() {
+        private val viewAccess: MainViewAccess,
+        private val btClient: RxBleClient) : BaseViewModel() {
 
     val connectedDevice = ObservableField<Device>(null)
     val connectedToDevice = ObservableBoolean(false)
     val devicesModels = mutableListOf<DeviceViewModel>()
     val scanInProgress = ObservableBoolean(false)
     val noDevicesFoundVisible = ObservableBoolean(false)
+
+    private var bleScanSubscription: Subscription? = null
 
     private val eventHandler = object : BleEventHandler {
         override fun handleConnecting(event: ConnectingEvent) {
@@ -70,39 +73,50 @@ class MainViewModel @Inject constructor(
         return false
     }
 
-    fun scan() {
-        RxBleLog.setLogLevel(RxBleLog.VERBOSE)
-
-        val devicesCount = addedDevices.size
-
-        addedDevices.clear()
-        devicesModels.clear()
-
-        viewAccess.notifyDevicesRemoved(devicesCount)
-
-        scanInProgress.set(true)
-        noDevicesFoundVisible.set(false)
-
-        val bleScanSubscription = btClient.scanBleDevices(ScanSettings.Builder().build())
-                .subscribe(
-                        { result ->
-                            val added = addNewDevice(device = Device(result.bleDevice.macAddress,
-                                    result.bleDevice.name ?: ""))
-                            if (added) {
-                                viewAccess.notifyDeviceAdded(devicesModels.size - 1)
-                            }
-                        },
-                        { throwable ->
-                            error("Bluetooth error: " + throwable)
-                        }
-                )
-
+    private fun cancelScanningAfterTimeLimitExceeded() {
         Observable.timer(SCAN_TIMEOUT, TimeUnit.SECONDS).subscribe {
             bleScanSubscription?.unsubscribe()
 
             scanInProgress.set(false)
             noDevicesFoundVisible.set(devicesModels.isEmpty())
         }
+    }
+
+    private fun startScanning() {
+        bleScanSubscription = btClient.scanBleDevices(ScanSettings.Builder().build())
+                .subscribe(
+                        { result -> handleNewDeviceDiscovered(result) },
+                        { throwable -> error("Bluetooth error: " + throwable) }
+                )
+    }
+
+    private fun handleNewDeviceDiscovered(result: ScanResult) {
+        val added = addNewDevice(device = Device(result.bleDevice.macAddress,
+                result.bleDevice.name ?: ""))
+        if (added) {
+            viewAccess.notifyDeviceAdded(devicesModels.size - 1)
+        }
+    }
+
+    private fun prepareViewForNewScan() {
+        scanInProgress.set(true)
+        noDevicesFoundVisible.set(false)
+    }
+
+    private fun clearCachedDevices() {
+        addedDevices.clear()
+        devicesModels.clear()
+
+        viewAccess.notifyDevicesRemoved(addedDevices.size)
+    }
+
+    fun scan() {
+        clearCachedDevices()
+        prepareViewForNewScan()
+
+        startScanning()
+
+        cancelScanningAfterTimeLimitExceeded()
     }
 
     fun checkConnectivity() {
