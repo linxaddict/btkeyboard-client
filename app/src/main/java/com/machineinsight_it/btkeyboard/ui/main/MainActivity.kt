@@ -1,6 +1,7 @@
 package com.machineinsight_it.btkeyboard.ui.main
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.arch.lifecycle.ViewModelProvider
@@ -64,10 +65,7 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     }
 
     private val connectionFragment by lazy { ConnectionFragment() }
-
-    private val localBroadcastManager by lazy {
-        LocalBroadcastManager.getInstance(this)
-    }
+    private val localBroadcastManager by lazy { LocalBroadcastManager.getInstance(this) }
 
     private var connectingDialog: Dialog? = null
 
@@ -84,13 +82,14 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
                 startService(it)
             }
 
+    @SuppressLint("CommitTransaction")
     private fun showConnection() {
-        val transaction = supportFragmentManager.beginTransaction()
-
-        transaction.setCustomAnimations(R.animator.fade_in, android.R.animator.fade_out)
-        transaction.add(R.id.fragment_container, connectionFragment)
-        transaction.addToBackStack(null)
-        transaction.commit()
+        supportFragmentManager.beginTransaction().apply {
+            setCustomAnimations(R.animator.fade_in, android.R.animator.fade_out)
+            add(R.id.fragment_container, connectionFragment)
+            addToBackStack(null)
+            commit()
+        }
     }
 
     private fun isLocationPermissionGranted() = ContextCompat.checkSelfPermission(this,
@@ -121,11 +120,11 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     private fun setupBluetooth() {
         val btAdapter = BluetoothAdapter.getDefaultAdapter()
         if (btAdapter == null) {
-            handleBluetoothDisabled()
+            handleBluetoothUnavailable()
         } else {
             if (!btAdapter.isEnabled) {
-                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                startActivityForResult(enableBtIntent, FEATURE_BLUETOOTH_REQUEST_CODE)
+                startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
+                        FEATURE_BLUETOOTH_REQUEST_CODE)
             } else {
                 initializeBluetoothScanning()
             }
@@ -141,8 +140,8 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     }
 
 
-    private fun handleBluetoothDisabled() {
-        alert("Bluetooth disabled", "Bluetooth") {
+    private fun handleBluetoothUnavailable() {
+        alert(R.string.bluetoothDisabledError, R.string.bluetoothDisabledErrorTitle) {
             okButton { finish() }
         }.show()
     }
@@ -182,7 +181,7 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
             if (resultCode == Activity.RESULT_OK) {
                 initializeBluetoothScanning()
             } else {
-                handleBluetoothDisabled()
+                handleBluetoothUnavailable()
             }
         }
     }

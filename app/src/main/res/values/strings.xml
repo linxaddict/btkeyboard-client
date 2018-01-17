@@ -11,6 +11,9 @@
     <string name="connecting">Connecting</string>
     <string name="connectionError">Connection error</string>
 
+    <string name="bluetoothDisabledErrorTitle">Bluetooth</string>
+    <string name="bluetoothDisabledError">The application will quit as bluetooth is not available</string>
+
     <!-- BtService -->
     <string name="notificationTitle">Bluetooth keyboard</string>
     <string name="notificationBody">Bluetooth service active</string>
