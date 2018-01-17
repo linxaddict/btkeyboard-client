@@ -1,4 +1,4 @@
-package com.machineinsight_it.btkeyboard.ble
+package com.machineinsight_it.btkeyboard.ble.di
 
 import android.content.Context
 import com.polidea.rxandroidble.RxBleClient

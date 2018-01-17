@@ -3,12 +3,14 @@ package com.machineinsight_it.btkeyboard.ble
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import com.machineinsight_it.btkeyboard.R
+import com.machineinsight_it.btkeyboard.ble.di.DaggerBtKeyboardServiceComponent
 import com.machineinsight_it.btkeyboard.ble.event.ConnectedEvent
 import com.machineinsight_it.btkeyboard.ble.event.ConnectingEvent
 import com.machineinsight_it.btkeyboard.ble.event.ConnectionErrorEvent
@@ -99,6 +101,7 @@ class BtKeyboardService : Service(), AnkoLogger {
         connectionSubscription = bleDevice
                 .establishConnection(false)
                 .doOnSubscribe { broadcastConnectionEvent(ConnectingEvent(device)) }
+                .flatMap { connection -> connection.setupNotification(BtKeyboardServiceProfile.key1Characteristic) }
                 .subscribe(
                         { connection ->
                             // TODO: connection.discoverServices()

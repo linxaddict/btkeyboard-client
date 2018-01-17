@@ -1,5 +1,6 @@
-package com.machineinsight_it.btkeyboard.ble
+package com.machineinsight_it.btkeyboard.ble.di
 
+import com.machineinsight_it.btkeyboard.ble.BtKeyboardService
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
