@@ -21,7 +21,7 @@ import rx.Subscription
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-private const val SCAN_TIMEOUT: Long = 5 // seconds
+private const val SCAN_TIMEOUT: Long = 10 // seconds
 
 class MainViewModel @Inject constructor(
         private val viewAccess: MainViewAccess,
@@ -83,6 +83,12 @@ class MainViewModel @Inject constructor(
     }
 
     private fun startScanning() {
+        bleScanSubscription?.let {
+            it.unsubscribe()
+            viewAccess.notifyDataSetChanged()
+        }
+
+        bleScanSubscription?.unsubscribe()
         bleScanSubscription = btClient.scanBleDevices(ScanSettings.Builder().build())
                 .subscribe(
                         { result -> handleNewDeviceDiscovered(result) },

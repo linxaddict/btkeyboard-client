@@ -9,7 +9,7 @@ ext {
     rxKotlinVersion = "2.2.0"
     rxAndroidBleVersion = "1.4.3"
     junitVersion = "4.12"
-    kotlinVersion = "1.2.10"
+    kotlinVersion = "1.2.20"
     archComponentsVersion = "1.0.0"
 
     archComponents = [

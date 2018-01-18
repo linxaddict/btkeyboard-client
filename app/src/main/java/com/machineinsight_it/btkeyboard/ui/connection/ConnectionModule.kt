@@ -11,4 +11,7 @@ class ConnectionModule {
     fun provideConnectionViewModelFactory(factory: ConnectionViewModelFactory): ViewModelProvider.Factory {
         return factory
     }
+
+    @Provides
+    fun provideConnectionViewAccess(fragment: ConnectionFragment): ConnectionViewAccess = fragment
 }

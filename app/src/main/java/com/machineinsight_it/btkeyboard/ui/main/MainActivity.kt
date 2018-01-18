@@ -38,7 +38,7 @@ import javax.inject.Inject
 private const val PERMISSION_REQUEST_CODE = 100
 private const val FEATURE_BLUETOOTH_REQUEST_CODE = 101
 
-class MainActivity : AppCompatActivity(), MainViewAccess {
+class MainActivity : AppCompatActivity(), MainViewAccess, MainNavigator {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
@@ -64,7 +64,10 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
         DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
     }
 
-    private val connectionFragment by lazy { ConnectionFragment() }
+    private val connectionFragment by lazy {
+        ConnectionFragment.create(BtKeyboardService.connectedDevice)
+    }
+
     private val localBroadcastManager by lazy { LocalBroadcastManager.getInstance(this) }
 
     private var connectingDialog: Dialog? = null
@@ -190,6 +193,8 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
 
     override fun notifyDevicesRemoved(count: Int) = devicesAdapter.notifyItemRangeRemoved(0, count)
 
+    override fun notifyDataSetChanged() = devicesAdapter.notifyDataSetChanged()
+
     override fun showMessage(message: String) {
         snackbar(binding.root, message)
     }
@@ -208,4 +213,6 @@ class MainActivity : AppCompatActivity(), MainViewAccess {
     }
 
     override fun showConnectionDetails() = showConnection()
+
+    override fun closeConnectionDetails() = supportFragmentManager.popBackStack()
 }

@@ -3,7 +3,6 @@ package com.machineinsight_it.btkeyboard.ble
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
-import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
@@ -19,8 +18,8 @@ import com.machineinsight_it.btkeyboard.domain.Device
 import com.machineinsight_it.btkeyboard.ui.main.MainActivity
 import com.polidea.rxandroidble.RxBleClient
 import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.info
 import org.jetbrains.anko.error
+import org.jetbrains.anko.info
 import rx.Subscription
 import javax.inject.Inject
 
@@ -44,6 +43,10 @@ class BtKeyboardService : Service(), AnkoLogger {
                 Intent(context, BtKeyboardService::class.java).apply {
                     putExtra(EXTRA_MAC, deviceMac)
                 }
+
+        fun createDisconnectIntent(context: Context) = Intent(context, BtKeyboardService::class.java).apply {
+            putExtra(EXTRA_STOP_SERVICE, true)
+        }
 
         fun extractConnectionEvent(intent: Intent): BleEvent {
             if (!intent.hasExtra(EXTRA_CONNECTION_EVENT)) {
@@ -76,10 +79,7 @@ class BtKeyboardService : Service(), AnkoLogger {
     private fun createNotification(): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
-
-        val serviceStopIntent = Intent(this, BtKeyboardService::class.java)
-        serviceStopIntent.putExtra(EXTRA_STOP_SERVICE, true)
-
+        val serviceStopIntent = createDisconnectIntent(this)
         val pendingServiceStopIntent = PendingIntent.getService(this, 0, serviceStopIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -101,7 +101,7 @@ class BtKeyboardService : Service(), AnkoLogger {
         connectionSubscription = bleDevice
                 .establishConnection(false)
                 .doOnSubscribe { broadcastConnectionEvent(ConnectingEvent(device)) }
-                .flatMap { connection -> connection.setupNotification(BtKeyboardServiceProfile.key1Characteristic) }
+//                .flatMap { connection -> connection.setupNotification(BtKeyboardServiceProfile.key1Characteristic) }
                 .subscribe(
                         { connection ->
                             // TODO: connection.discoverServices()

@@ -5,6 +5,8 @@ interface MainViewAccess {
 
     fun notifyDevicesRemoved(count: Int)
 
+    fun notifyDataSetChanged()
+
     fun showMessage(message: String)
 
     fun showMessage(message: Int)
