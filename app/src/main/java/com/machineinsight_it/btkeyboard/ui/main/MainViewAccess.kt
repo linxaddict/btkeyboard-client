@@ -11,7 +11,7 @@ interface MainViewAccess {
 
     fun showMessage(message: Int)
 
-    fun showConnectingDialog()
+//    fun showConnectingDialog()
 
     fun hideConnectingDialog()
 

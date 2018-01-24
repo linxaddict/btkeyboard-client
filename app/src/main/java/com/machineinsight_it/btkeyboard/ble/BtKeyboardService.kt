@@ -21,6 +21,7 @@ import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.error
 import org.jetbrains.anko.info
 import rx.Subscription
+import java.util.*
 import javax.inject.Inject
 
 const val BROADCAST_EVENT_NAME = "btkeyboard_event_broadcast"
@@ -101,9 +102,19 @@ class BtKeyboardService : Service(), AnkoLogger {
         connectionSubscription = bleDevice
                 .establishConnection(false)
                 .doOnSubscribe { broadcastConnectionEvent(ConnectingEvent(device)) }
-//                .flatMap { connection -> connection.setupNotification(BtKeyboardServiceProfile.key1Characteristic) }
+                .flatMap { connection -> connection.setupNotification(UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb")) }
+//                .flatMap { connection -> connection.readCharacteristic(BtKeyboardServiceProfile.key1Characteristic) }
+//                .flatMap { connection -> connection.discoverServices() }
                 .subscribe(
                         { connection ->
+//                            connection.setupNotification(UUID.fromString("00002a0f-0000-1000-8000-00805f9b34fb")).subscribe(
+//                                    {
+//                                        System.out.println("notification set")
+//                                    },
+//                                    {
+//                                        System.out.println("notification error: " + it)
+//                                    }
+//                            )
                             // TODO: connection.discoverServices()
 
                             connectedDevice = device

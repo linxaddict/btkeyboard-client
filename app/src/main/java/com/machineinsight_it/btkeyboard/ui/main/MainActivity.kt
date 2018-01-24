@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.bluetooth.BluetoothAdapter
@@ -159,6 +160,14 @@ class MainActivity : AppCompatActivity(), MainViewAccess, MainNavigator {
         binding.recyclerDevices.addItemDecoration(DividerItemDecoration(this,
                 LinearLayoutManager.VERTICAL))
 
+        viewModel.showConnectingEvent.observe(
+                this,
+                Observer {
+                    connectingDialog = indeterminateProgressDialog(R.string.connecting)
+                    connectingDialog?.setCancelable(false)
+                }
+        )
+
         setupBluetooth()
     }
 
@@ -203,10 +212,10 @@ class MainActivity : AppCompatActivity(), MainViewAccess, MainNavigator {
         snackbar(binding.root, message)
     }
 
-    override fun showConnectingDialog() {
-        connectingDialog = indeterminateProgressDialog(R.string.connecting)
-        connectingDialog?.setCancelable(false)
-    }
+//    override fun showConnectingDialog() {
+//        connectingDialog = indeterminateProgressDialog(R.string.connecting)
+//        connectingDialog?.setCancelable(false)
+//    }
 
     override fun hideConnectingDialog() {
         connectingDialog?.hide()

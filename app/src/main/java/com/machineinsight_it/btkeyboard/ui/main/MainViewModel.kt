@@ -1,5 +1,6 @@
 package com.machineinsight_it.btkeyboard.ui.main
 
+import android.arch.lifecycle.MutableLiveData
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
 import com.machineinsight_it.btkeyboard.R
@@ -11,6 +12,7 @@ import com.machineinsight_it.btkeyboard.ble.event.DisconnectedEvent
 import com.machineinsight_it.btkeyboard.ble.event.base.BleEvent
 import com.machineinsight_it.btkeyboard.ble.event.base.BleEventHandler
 import com.machineinsight_it.btkeyboard.domain.Device
+import com.machineinsight_it.btkeyboard.ui.base.events.SingleLiveEvent
 import com.machineinsight_it.btkeyboard.ui.base.model.BaseViewModel
 import com.machineinsight_it.btkeyboard.ui.device.DeviceViewModel
 import com.polidea.rxandroidble.RxBleClient
@@ -21,7 +23,7 @@ import rx.Subscription
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-private const val SCAN_TIMEOUT: Long = 10 // seconds
+private const val SCAN_TIMEOUT: Long = 20 // seconds
 
 class MainViewModel @Inject constructor(
         private val viewAccess: MainViewAccess,
@@ -33,11 +35,14 @@ class MainViewModel @Inject constructor(
     val scanInProgress = ObservableBoolean(false)
     val noDevicesFoundVisible = ObservableBoolean(false)
 
+    val showConnectingEvent: SingleLiveEvent<Void> = SingleLiveEvent()
+
     private var bleScanSubscription: Subscription? = null
 
     private val eventHandler = object : BleEventHandler {
         override fun handleConnecting(event: ConnectingEvent) {
-            viewAccess.showConnectingDialog()
+//            viewAccess.showConnectingDialog()
+            showConnectingEvent.call()
         }
 
         override fun handleConnected(event: ConnectedEvent) {
